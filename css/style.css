@@ -56,6 +56,14 @@
 .btn-ghost   { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: #e2e8f0; }
 .btn-ghost:hover { background: rgba(255,255,255,.12); }
 
+/* Sélecteur d'instrument-manette (modes piano / grille / soufflé) */
+.gp-mode.active {
+  background: linear-gradient(135deg, rgba(45,212,191,.22), rgba(124,92,255,.22));
+  border-color: rgba(45,212,191,.65);
+  color: #5eead4;
+  box-shadow: 0 0 14px rgba(45,212,191,.25);
+}
+
 /* Contrôles */
 .ctrl { @apply flex flex-col gap-1.5; }
 .ctrl-label { @apply text-xs text-slate-400 uppercase tracking-wide; }

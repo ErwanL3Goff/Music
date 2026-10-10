@@ -166,15 +166,42 @@ class PianoUI {
     el.addEventListener('pointerleave', () => { if (this.pressed.has(`pointer:${midi}`)) this.triggerOff(midi); });
   }
 
-  triggerOn(midi, source = 'key') {
+  /** @param {object|null} opts — { vibrato: bool } pour la manette */
+  triggerOn(midi, source = 'key', o = null) {
     const tag = `${source}:${midi}`;
     if (this.pressed.has(tag)) return;
     this.pressed.add(tag);
     const freq = midiToFreq(midi);
     const el = this.keysEl.get(midi);
     if (el) el.classList.add('down');
-    engine.noteOn(`m${midi}`, freq);
-    if (this.opts.onNoteOn) this.opts.onNoteOn(midi, freq);
+    // Une seule voix sonore : pianoMain possède les callbacks (enregistreur),
+    // les autres pianos servent uniquement à l'allumage visuel des touches.
+    const isPrimary = this.opts.onNoteOn != null;
+    if (isPrimary) engine.noteOn(`m${midi}`, freq);
+    if (o && o.vibrato && isPrimary) engine.setVibrato(`m${midi}`, true);
+    if (isPrimary && this.opts.onNoteOn) this.opts.onNoteOn(midi, freq);
+  }
+
+  /** Remplace une voix tenue par une autre hauteur sans ré-attaque
+   *  (glissando / bending / soufflé de la manette Xbox).
+   *  Retourne true si la bascule a pu être faite sans ré-enclencher l'enveloppe. */
+  retune(oldMidi, newMidi) {
+    if (oldMidi == null || oldMidi === newMidi) return false;
+    const freq = midiToFreq(newMidi);
+    let done = false;
+    for (const tag of [...this.pressed]) {
+      if (!tag.endsWith(`:${oldMidi}`)) continue;
+      this.pressed.delete(tag);
+      this.pressed.add(`${tag.slice(0, tag.lastIndexOf(':'))}:${newMidi}`);
+      done = true;
+    }
+    if (!done) return false; // plus aucune source sur oldMidi : rien à glisser
+    const elOld = this.keysEl.get(oldMidi);
+    const elNew = this.keysEl.get(newMidi);
+    if (elOld && ![...this.pressed].some(p => p.endsWith(`:${oldMidi}`))) elOld.classList.remove('down');
+    if (elNew) elNew.classList.add('down');
+    if (this.opts.onNoteOn != null) engine.noteRetune(`m${oldMidi}`, `m${newMidi}`, freq);
+    return true;
   }
 
   triggerOff(midi) {
@@ -188,7 +215,10 @@ class PianoUI {
     if (stillDown) return;
     const el = this.keysEl.get(midi);
     if (el) el.classList.remove('down');
-    engine.noteOff(`m${midi}`);
+    if (this.opts.onNoteOn != null) { // voix sonore = piano principal
+      engine.setVibrato(`m${midi}`, false);
+      engine.noteOff(`m${midi}`);
+    }
     if (this.opts.onNoteOff) this.opts.onNoteOff(midi);
   }
 

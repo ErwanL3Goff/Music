@@ -101,9 +101,62 @@ class AudioEngine {
       voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), t);
       voice.gain.gain.exponentialRampToValueAtTime(0.0001, t + rel);
       voice.osc.stop(t + rel + 0.05);
+      if (voice.lfo) voice.lfo.stop(t + rel + 0.05);
     } catch (e) { /* voix déjà stoppée */ }
 
     this.voices.delete(keyId);
+  }
+
+  /** Change la clé ET la hauteur d'une voix tenue (glissando manette sans ré-attaque) */
+  noteRetune(oldKeyId, newKeyId, freq) {
+    const v = this.voices.get(oldKeyId);
+    if (!v || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    v.freq = freq;
+    v.osc.frequency.setTargetAtTime(freq, t, 0.015); // portamento fluide
+    if (v.lfoGain) {
+      try { v.lfo.frequency.setTargetAtTime(this._vibratoRate(freq), t, 0.05); } catch (_) {}
+    }
+    this.voices.delete(oldKeyId);
+    this.voices.set(newKeyId, v);
+  }
+
+  /** Ajuste le volume d'une seule voix (mode soufflé : souffle = dynamique) */
+  setVoiceLevel(keyId, level) {
+    const v = this.voices.get(keyId);
+    if (!v || !this.ctx) return;
+    v.gain.gain.setTargetAtTime(Math.max(0.0001, level * 0.9), this.ctx.currentTime, 0.03);
+  }
+
+  /** Fréquence d'un vibrato proportionnel à la hauteur de la note
+   *  (évite un battement trop lent dans le grave, trop frénétique dans l'aigu) */
+  _vibratoRate(freq) {
+    return Math.min(8.5, Math.max(3.2, freq / 90));
+  }
+
+  /** Active le vibrato (LFO sur la hauteur) d'une voix tenue — manette Xbox */
+  setVibrato(keyId, on) {
+    const v = this.voices.get(keyId);
+    if (!v || !this.ctx) return;
+    if (on && v.lfo) return;
+    if (!on) {
+      if (v.lfoGain) { try { v.lfoGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.06); } catch (_) {} }
+      if (v.lfo) { try { v.lfo.stop(this.ctx.currentTime + 0.3); } catch (_) {} }
+      v.lfo = null; v.lfoGain = null;
+      return;
+    }
+    const t = this.ctx.currentTime;
+    const lfo = this.ctx.createOscillator();
+    const lfoGain = this.ctx.createGain();
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(this._vibratoRate(v.freq || 440), t);
+    lfoGain.gain.setValueAtTime(0, t);
+    // montée progressive : ~15 cents (quasi quart de demi-ton)
+    lfoGain.gain.linearRampToValueAtTime(v.freq * 0.0087, t + 0.35);
+    lfo.connect(lfoGain);
+    lfoGain.connect(v.osc.detune);
+    lfo.start(t);
+    v.lfo = lfo; v.lfoGain = lfoGain;
   }
 
   /** Joue une note auto-stop (pour la lecture de partitions/prises) */

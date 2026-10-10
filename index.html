@@ -50,7 +50,7 @@
         <button data-tab="play"   class="tab-btn active">🎹 Jouer</button>
         <button data-tab="record" class="tab-btn">🔴 Enregistrer</button>
         <button data-tab="scores" class="tab-btn">🎼 Partitions</button>
-        <button data-tab="gamepad" class="tab-btn">🎮 Manette Xbox</button>
+        <button data-tab="gamepad" class="tab-btn">🎮 Manette en instrument</button>
       </nav>
     </div>
   </header>
@@ -334,7 +334,15 @@
                 L'application utilise l'API standard <code class="code">Gamepad</code> du navigateur&nbsp;: sous Windows,
                 les manettes <b>Xbox 360</b> et compatibles <b>XInput</b> sont exposées automatiquement avec le mapping
                 «&nbsp;standard&nbsp;». La connexion est <b>détectée à chaud</b> — aucune installation ni pilote requis.
+                Choisissez ci-dessous l'<b>instrument</b> que la manette devient&nbsp;: chaque bouton, stick et gâchette
+                produit directement des sons (fréquences Web Audio), avec <b>vibration</b> à chaque note.
               </p>
+              <div class="flex gap-2 flex-wrap" id="gp-modes"></div>
+              <div class="flex items-center gap-3 text-xs text-slate-300">
+                <label for="gp-breathtrim" class="shrink-0">Sensibilité souffle&nbsp;:</label>
+                <input type="range" id="gp-breathtrim" min="-40" max="40" step="5" value="0" class="accent-teal-400 flex-1">
+                <span id="gp-breathtrim-val" class="font-mono text-aqua w-14">+0 %</span>
+              </div>
               <div class="flex gap-2 flex-wrap">
                 <button id="btn-gp-test" class="btn btn-primary">🎮 Balayer les 88 touches</button>
                 <button id="btn-gp-reset" class="btn btn-ghost">↺ Réinitialiser la configuration</button>
@@ -361,6 +369,7 @@
                 <li><kbd>B</kbd>/<kbd>X</kbd> maintenus&nbsp;: glissando demi-tonal montant/descendant.</li>
                 <li><kbd>RB</kbd>/<kbd>LT</kbd>&nbsp;: quinte / quarte au-dessus de la note courante.</li>
                 <li><kbd>Start</kbd>&nbsp;: balayage des 88 touches · <kbd>Back</kbd>&nbsp;: couper toutes les voix.</li>
+                <li>Les notes jouées à la manette passent par l'enregistreur si le 🔴 REC est actif.</li>
               </ul>
             </div>
           </div>
@@ -378,21 +387,21 @@
                 <path d="M40 90 Q30 40 80 35 Q130 30 160 55 Q190 30 240 35 Q290 40 280 90 Q275 135 240 150 Q200 165 160 140 Q120 165 80 150 Q45 135 40 90 Z" fill="#1e2440" stroke="#475081" stroke-width="2"/>
                 <circle cx="85" cy="80" r="26" fill="none" stroke="#3a4368" stroke-width="2"/>
                 <circle cx="85" cy="80" r="10" fill="#2dd4bf" opacity=".85"/>
-                <text x="85" y="120" fill="#94a3b8" font-size="10" text-anchor="middle">Stick G : octave</text>
+                <text x="85" y="120" fill="#94a3b8" font-size="10" text-anchor="middle">Stick G : octave / hauteur / bend</text>
                 <g>
                   <rect x="212" y="52" width="12" height="12" rx="2" fill="#f472b6"/><text x="218" y="48" fill="#cbd5e1" font-size="9" text-anchor="middle">Y</text>
                   <rect x="212" y="96" width="12" height="12" rx="2" fill="#f472b6"/><text x="218" y="112" fill="#cbd5e1" font-size="9" text-anchor="middle">A</text>
                   <rect x="192" y="74" width="12" height="12" rx="2" fill="#f472b6"/><text x="188" y="82" fill="#cbd5e1" font-size="9" text-anchor="end">X</text>
                   <rect x="232" y="74" width="12" height="12" rx="2" fill="#f472b6"/><text x="248" y="82" fill="#cbd5e1" font-size="9">B</text>
-                  <text x="218" y="132" fill="#94a3b8" font-size="10" text-anchor="middle">Accords / glissando</text>
+                  <text x="218" y="132" fill="#94a3b8" font-size="10" text-anchor="middle">Accords · frettés · doigtés</text>
                 </g>
                 <g fill="#a5b4fc">
                   <rect x="132" y="70" width="8" height="8" rx="1"/><rect x="132" y="94" width="8" height="8" rx="1"/>
                   <rect x="120" y="82" width="8" height="8" rx="1"/><rect x="144" y="82" width="8" height="8" rx="1"/>
                 </g>
-                <text x="136" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">Croix : accords</text>
+                <text x="136" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">Croix : accords / doigtés</text>
                 <circle cx="160" cy="62" r="7" fill="#2dd4bf" opacity=".9"/><text x="160" y="45" fill="#94a3b8" font-size="9" text-anchor="middle">Start : 88 touches</text>
-                <text x="160" y="175" fill="#64748b" font-size="9" text-anchor="middle">LB/RT = ♯ · Stick D = mélodie · RB/LT = quinte/quarte</text>
+                <text x="160" y="175" fill="#64748b" font-size="9" text-anchor="middle">Gâchettes = souffle &amp; cordes · LB/RB = ♯ &amp; cases · vibration à chaque note</text>
               </svg>
             </div>
           </div>

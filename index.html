@@ -94,8 +94,8 @@
 
             <div class="px-4 pb-4 flex items-center gap-3 flex-wrap">
               <label class="ctrl grow min-w-[180px]">
-                <span class="ctrl-label">Octave : <b id="oct-val">4</b> (touches A–L = do–la, W–P = dièses)</span>
-                <input id="octave" type="range" min="2" max="6" value="4" class="ctrl-range" />
+                <span class="ctrl-label">Octave de base : <b id="oct-val">4</b> (2 octaves jouables, ± avec les touches - / +)</span>
+                <input id="octave" type="range" min="2" max="5" value="4" class="ctrl-range" />
               </label>
               <button id="btn-demo" class="btn btn-ghost">▶ Jouer la gamme de Do</button>
             </div>
@@ -110,10 +110,11 @@
             <div class="p-4 overflow-x-auto">
               <div id="keyboard" class="keyboard relative select-none"></div>
             </div>
-            <div class="px-4 pb-4 text-xs text-slate-400">
-              Disposition&nbsp;: <kbd>A</kbd><kbd>Z</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>U</kbd> (blanches) ·
-              <kbd>S</kbd><kbd>D</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd> (dièses) ·
-              <kbd>O</kbd><kbd>P</kbd> (si / do supérieur)
+            <div class="px-4 pb-4 text-xs text-slate-400 leading-6">
+              Disposition&nbsp;: <kbd>A</kbd><kbd>Z</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>U</kbd><kbd>I</kbd><kbd>O</kbd><kbd>P</kbd> (blanches, 2 octaves) ·
+              <kbd>S</kbd><kbd>D</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd><kbd>L</kbd><kbd>M</kbd> (dièses) ·
+              Alias QWERTY <kbd>W</kbd><kbd>X</kbd><kbd>C</kbd><kbd>V</kbd><kbd>B</kbd><kbd>N</kbd> ·
+              <kbd>-</kbd><kbd>+</kbd> changer d'octave
             </div>
           </div>
 
@@ -134,6 +135,14 @@
             <div id="live-notes" class="p-4 flex flex-wrap gap-2 min-h-[64px]">
               <span class="text-xs text-slate-500 italic self-center">Aucune note…</span>
             </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Raccourcis clavier</h2>
+              <span class="badge">2 octaves · 17 touches</span>
+            </div>
+            <div id="kbd-help" class="p-4 space-y-2 leading-6"></div>
           </div>
 
           <div class="card">
@@ -182,7 +191,7 @@
             <div class="p-4 pt-2">
               <div class="mini-keyboard-hint card-inner">
                 <p class="text-xs text-slate-400 mb-2">Le synthé reste jouable pendant l'enregistrement :</p>
-                <div id="keyboard-rec" class="keyboard relative select-none scale-90 origin-left"></div>
+                <div id="keyboard-rec" class="keyboard relative select-none"></div>
               </div>
             </div>
           </div>

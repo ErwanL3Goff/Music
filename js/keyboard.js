@@ -4,18 +4,24 @@
  * callbacks pour l'enregistreur.
  * ========================================================= */
 
-// Touches blanches : note relative (demi-tons depuis Do) -> touche clavier
-// Layout inspiré des DAW : A Z E R T Y U = do ré mi fa sol la si
+// Layout "DAW" étendu sur ~2 octaves (25 touches) :
+// - Rangée du bas : A Z E R T Y U I O P = do ré mi fa sol la si do ré mi
+// - Dièses        : S D _ G H J L ; M , = do# ré# _ fa# sol# la# do# ré# mi#…
+// - Alias QWERTY  : W X C V B N = ré mi fa sol la si (rangée haute décalée)
+// `rel` = demi-tons depuis le Do de l'octave de base, `afterWhite` = index
+// de la touche blanche précédent immédiatement la touche noire.
 const KEY_MAP = {
   white: [
-    { rel: 0,  key: 'a' },   // Do
-    { rel: 2,  key: 'z' },   // Ré  (aussi w sur qwerty)
-    { rel: 4,  key: 'e' },   // Mi
-    { rel: 5,  key: 'r' },   // Fa
-    { rel: 7,  key: 't' },   // Sol
-    { rel: 9,  key: 'y' },   // La
-    { rel: 11, key: 'u' },   // Si
-    { rel: 12, key: 'p' },   // Do+1 (et i selon layout)
+    { rel: 0,  key: 'a', alt: 'q' },  // Do
+    { rel: 2,  key: 'z', alt: 'w' },  // Ré
+    { rel: 4,  key: 'e', alt: 'x' },  // Mi
+    { rel: 5,  key: 'r', alt: 'c' },  // Fa
+    { rel: 7,  key: 't', alt: 'v' },  // Sol
+    { rel: 9,  key: 'y', alt: 'b' },  // La
+    { rel: 11, key: 'u', alt: 'n' },  // Si
+    { rel: 12, key: 'i', alt: ',' },  // Do+1 (octave supérieure)
+    { rel: 14, key: 'o', alt: ';' },  // Ré+1
+    { rel: 16, key: 'p', alt: ':' },  // Mi+1
   ],
   black: [
     { rel: 1,  key: 's', afterWhite: 0 },  // Do#
@@ -23,6 +29,8 @@ const KEY_MAP = {
     { rel: 6,  key: 'g', afterWhite: 3 },  // Fa#
     { rel: 8,  key: 'h', afterWhite: 4 },  // Sol#
     { rel: 10, key: 'j', afterWhite: 5 },  // La#
+    { rel: 13, key: 'l', afterWhite: 7 },  // Do#+1
+    { rel: 15, key: 'm', afterWhite: 8 },  // Ré#+1
   ],
 };
 
@@ -56,7 +64,7 @@ class PianoUI {
       const el = document.createElement('div');
       el.className = 'key key-white';
       el.style.left = `${i * W}%`;
-      el.style.width = `calc(${W}% - 3px)`;
+      el.style.width = `calc(${W}% - 2px)`;
       el.style.height = '100%';
       el.dataset.midi = midi;
       el.innerHTML = `<span class="key-name">${midiToName(midi)}</span><span class="key-hint">${w.key.toUpperCase()}</span>`;
@@ -67,14 +75,15 @@ class PianoUI {
 
     KEY_MAP.black.forEach(b => {
       const midi = this.midiOfRel(b.rel);
+      if (this.keysEl.has(midi)) return; // évite tout doublon de touche
       const el = document.createElement('div');
       el.className = 'key key-black';
       const left = (b.afterWhite + 1) * W; // centrée sur la jointure
-      el.style.left = `calc(${left}% - ${W * 0.3}px)`;
+      el.style.left = `calc(${left}% - ${W * 0.3}%)`;
       el.style.width = `${W * 0.6}%`;
       el.style.height = '62%';
       el.dataset.midi = midi;
-      el.innerHTML = `<span class="key-name" style="color:#cbd5e1;top:auto;bottom:8px;">${midiToName(midi)}</span><span class="key-hint" style="color:#94a3b8">${b.key.toUpperCase()}</span>`;
+      el.innerHTML = `<span class="key-name" style="color:#cbd5e1;top:auto;bottom:8px;font-size:9px;">${midiToName(midi)}</span><span class="key-hint" style="color:#94a3b8">${b.key.toUpperCase()}</span>`;
       this.bindPointer(el, midi);
       this.container.appendChild(el);
       this.keysEl.set(midi, el);
@@ -150,13 +159,17 @@ class PhysicalKeyboard {
   buildMap() {
     const m = new Map();
     const add = (code, rel) => m.set(code, rel);
-    // Blanches
-    add('KeyA', 0); add('KeyZ', 2); add('KeyE', 4); add('KeyR', 5);
-    add('KeyT', 7); add('KeyY', 9); add('KeyU', 11); add('KeyP', 12);
-    // Dièses
-    add('KeyS', 1); add('KeyD', 3); add('KeyG', 6); add('KeyH', 8); add('KeyJ', 10);
-    // Alias QWERTY courants
-    add('KeyW', 2); add('KeyF', 5);   // F = Fa sur qwerty aussi (rel 5 ok)
+    // Blanches — rangée du bas : A Z E R T Y U I O P (2 octaves + tierce mineure sup.)
+    add('KeyA', 0);  add('KeyZ', 2);  add('KeyE', 4);  add('KeyR', 5);
+    add('KeyT', 7);  add('KeyY', 9);  add('KeyU', 11); add('KeyI', 12);
+    add('KeyO', 14); add('KeyP', 16);
+    // Dièses — S D G H J + L ; M , (octave supérieure)
+    add('KeyS', 1);  add('KeyD', 3);  add('KeyG', 6);  add('KeyH', 8);
+    add('KeyJ', 10); add('KeyL', 13); add('Semicolon', 14); add('KeyM', 15);
+    add('Comma', 16);
+    // Alias QWERTY courants (rangée haute décalée d'un cran)
+    add('KeyW', 2);  add('KeyX', 4);  add('KeyC', 5);  add('KeyF', 5);
+    add('KeyV', 7);  add('KeyB', 9);  add('KeyN', 11); add('KeyQ', 0);
     return m;
   }
 

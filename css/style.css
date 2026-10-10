@@ -72,32 +72,34 @@ kbd {
 .code { @apply text-aqua font-mono text-xs; }
 
 /* ===== Piano ===== */
-.keyboard { height: 190px; min-width: 560px; }
+.keyboard { height: 190px; min-width: 640px; }
 .key {
   position: absolute;
   top: 0;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 7px 7px;
   transition: transform 0.06s ease, background 0.08s ease, box-shadow 0.08s ease;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   cursor: pointer;
 }
 .key .key-hint {
-  font-size: 10px;
+  font-size: 9px;
   font-family: ui-monospace, monospace;
   opacity: 0.55;
   pointer-events: none;
 }
 .key .key-name {
   position: absolute;
-  top: 8px;
+  top: 6px;
   left: 0; right: 0;
   text-align: center;
-  font-size: 10px;
+  font-size: 8.5px;
   opacity: 0.6;
   pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .key-white {
   background: linear-gradient(#fdfdfe, #e9eaf2);

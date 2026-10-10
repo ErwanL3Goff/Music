@@ -80,6 +80,30 @@ function initTabs() {
 }
 
 // ---------- Synthé ----------
+// ---------- Aides-mémoire du clavier physique ----------
+function buildKeyboardHelp() {
+  const rows = [
+    { title: 'Touches blanches — octave de base', items: KEY_MAP.white.filter(w => w.rel < 12) },
+    { title: 'Dièses — octave de base',           items: KEY_MAP.black.filter(b => b.rel < 12) },
+    { title: 'Touches blanches — octave supérieure', items: KEY_MAP.white.filter(w => w.rel >= 12) },
+    { title: 'Dièses — octave supérieure',        items: KEY_MAP.black.filter(b => b.rel >= 12) },
+  ];
+  const wrap = $('#kbd-help');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  rows.forEach(r => {
+    const line = document.createElement('div');
+    line.className = 'flex flex-wrap items-center gap-1 text-xs';
+    const label = `<span class="text-slate-400 w-56 shrink-0">${r.title} :</span>`;
+    const keys = r.items.map(k => {
+      const midi = (+$('#octave').value + 1) * 12 + k.rel;
+      return `<kbd>${k.key.toUpperCase()}</kbd><span class="text-aqua font-mono mr-2">${midiToName(midi)}</span>`;
+    }).join('');
+    line.innerHTML = label + keys;
+    wrap.appendChild(line);
+  });
+}
+
 function initSynthControls() {
   $('#waveform').addEventListener('change', e => { engine.settings.waveform = e.target.value; });
   $('#volume').addEventListener('input', e => {
@@ -97,7 +121,7 @@ function initSynthControls() {
   $('#octave').addEventListener('input', e => setOctave(+e.target.value));
 
   document.addEventListener('octave-change', (e) => {
-    const v = Math.min(6, Math.max(2, +$('#octave').value + e.detail));
+    const v = Math.min(5, Math.max(2, +$('#octave').value + e.detail));
     $('#octave').value = v;
     setOctave(v);
   });
@@ -109,21 +133,23 @@ function setOctave(oct) {
   $('#oct-val').textContent = oct;
   [pianoMain, pianoRec].forEach(p => p && p.setOctave(oct));
   buildFreqTable(oct);
+  if (typeof window.buildKeyboardHelp === 'function') window.buildKeyboardHelp();
 }
 
 function playScaleDemo() {
   engine.ensureContext();
   const base = (+$('#octave').value + 1) * 12;
-  const scale = [0, 2, 4, 5, 7, 9, 11, 12];
+  // Gamme de Do sur 2 octaves (15 notes) — met en valeur l'étendue du clavier
+  const scale = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
   scale.forEach((rel, i) => {
     setTimeout(() => {
       const midi = base + rel;
       engine.playNote(midiToFreq(midi), 0.4);
       UI.flashKey(midi);
       showLiveNotes([{ midi, freq: midiToFreq(midi) }]);
-    }, i * 380);
+    }, i * 260);
   });
-  setTimeout(() => showLiveNotes(engine.getActiveNotes().map(f => ({ midi: -1, freq: f }))), scale.length * 380 + 400);
+  setTimeout(() => showLiveNotes(engine.getActiveNotes().map(f => ({ midi: -1, freq: f }))), scale.length * 260 + 400);
 }
 
 // ---------- Notes actives + lecture fréquence ----------
@@ -426,6 +452,7 @@ window.addEventListener('DOMContentLoaded', () => {
   new PhysicalKeyboard([pianoMain, pianoRec]);
 
   buildFreqTable(+$('#octave').value);
+  buildKeyboardHelp();
 
   scopeCanvas = $('#scope');
   scopeCtx = scopeCanvas.getContext('2d');

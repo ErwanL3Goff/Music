@@ -1,0 +1,240 @@
+/* ===== Fréquence Studio — styles complémentaires à Tailwind ===== */
+
+/* Onglets */
+.tab-btn {
+  @apply px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+.tab-btn:hover { background: rgba(124, 92, 255, 0.18); transform: translateY(-1px); }
+.tab-btn.active {
+  background: linear-gradient(135deg, #7c5cff, #2dd4bf);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(124, 92, 255, 0.5);
+}
+
+/* Cartes */
+.card {
+  background: #141a33;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.card-head {
+  @apply flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10;
+  background: rgba(255, 255, 255, 0.03);
+}
+.card-title { @apply font-semibold text-base; }
+.card-inner {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+}
+
+/* Badges */
+.badge {
+  @apply text-xs font-mono px-2.5 py-1 rounded-full;
+  background: rgba(45, 212, 191, 0.15);
+  color: #2dd4bf;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+}
+.badge-idle { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-color: rgba(148,163,184,.3); }
+.badge-rec  { background: rgba(251, 113, 133, 0.18); color: #fb7185; border-color: rgba(251,113,133,.4); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+/* Boutons */
+.btn {
+  @apply px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 disabled:opacity-40 disabled:pointer-events-none;
+}
+.btn-primary { background: linear-gradient(135deg, #7c5cff, #6452f9); color: #fff; box-shadow: 0 4px 14px rgba(124,92,255,.35); }
+.btn-primary:hover { filter: brightness(1.15); }
+.btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+.btn-danger  { background: linear-gradient(135deg, #f43f5e, #e11d48); color: #fff; }
+.btn-rec     { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; box-shadow: 0 4px 14px rgba(244,63,94,.4); }
+.btn-ghost   { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: #e2e8f0; }
+.btn-ghost:hover { background: rgba(255,255,255,.12); }
+
+/* Contrôles */
+.ctrl { @apply flex flex-col gap-1.5; }
+.ctrl-label { @apply text-xs text-slate-400 uppercase tracking-wide; }
+.ctrl-input {
+  @apply bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-accent;
+  color: #e2e8f0;
+}
+.ctrl-input option { background: #141a33; }
+.ctrl-range { @apply w-full accent-[#7c5cff] cursor-pointer; }
+
+kbd {
+  @apply inline-block px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-[11px] font-mono mx-0.5;
+}
+.code { @apply text-aqua font-mono text-xs; }
+
+/* ===== Piano ===== */
+.keyboard { height: 190px; min-width: 560px; }
+.key {
+  position: absolute;
+  top: 0;
+  border-radius: 0 0 8px 8px;
+  transition: transform 0.06s ease, background 0.08s ease, box-shadow 0.08s ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+.key .key-hint {
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.key .key-name {
+  position: absolute;
+  top: 8px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 10px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.key-white {
+  background: linear-gradient(#fdfdfe, #e9eaf2);
+  border: 1px solid #b9bccb;
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,0.08);
+  color: #334;
+  z-index: 1;
+}
+.key-white:hover { background: linear-gradient(#fff, #dfe3ff); }
+.key-white.down {
+  background: linear-gradient(#c9b8ff, #a78bfa);
+  transform: translateY(3px);
+  box-shadow: 0 0 16px rgba(124, 92, 255, 0.7);
+}
+.key-black {
+  background: linear-gradient(#2a2f45, #0f1223);
+  border: 1px solid #000;
+  box-shadow: inset 0 -6px 0 rgba(255,255,255,0.06), 0 4px 6px rgba(0,0,0,.5);
+  color: #9aa;
+  z-index: 2;
+}
+.key-black:hover { background: linear-gradient(#39405e, #171c33); }
+.key-black.down {
+  background: linear-gradient(#2dd4bf, #0f766e);
+  transform: translateY(3px);
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.7);
+}
+
+/* Notes actives */
+.live-chip {
+  @apply px-3 py-1.5 rounded-lg text-sm font-mono animate-[fadeIn_.15s_ease];
+  background: linear-gradient(135deg, rgba(124,92,255,.3), rgba(45,212,191,.25));
+  border: 1px solid rgba(124,92,255,.5);
+}
+@keyframes fadeIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+
+/* Table fréquences */
+.freq-table th { @apply text-left text-xs uppercase text-slate-400 pb-2 border-b border-white/10; }
+.freq-table td { @apply py-1.5 border-b border-white/5 font-mono text-xs; }
+.freq-table tr:hover td { background: rgba(124,92,255,.08); }
+
+/* Journal de prise */
+.log-list li {
+  @apply flex items-center gap-2 font-mono text-xs py-1 px-2 rounded;
+  border-bottom: 1px dashed rgba(255,255,255,.06);
+}
+.log-list .t { color: #2dd4bf; }
+.log-list .n { color: #c4b5fd; font-weight: 700; }
+.log-list .f { color: #94a3b8; }
+
+/* ===== Portée (partition) ===== */
+.staff-wrap { padding: 14px 12px; overflow-x: auto; min-height: 130px; }
+.staff {
+  position: relative;
+  height: 100px;
+  min-width: 100%;
+}
+/* 5 lignes de la portée : Mi4 (ligne médiane, top 50px) à La4/Si4 (top 18px et 82px) */
+.staff::before, .staff::after { content: ""; }
+.staff-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: rgba(255,255,255,.28);
+}
+.note-glyph {
+  position: absolute;
+  width: 18px;
+  height: 13px;
+  border-radius: 45%;
+  background: #e2e8f0;
+  transform: rotate(-12deg);
+  transition: background .1s, box-shadow .1s;
+}
+.note-glyph::after { /* hampe */
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: 8px;
+  width: 2px;
+  height: 38px;
+  background: #e2e8f0;
+}
+.note-glyph.hollow { background: transparent; border: 2.5px solid #e2e8f0; }
+.note-glyph.beamed::before { /* double hampe croches */
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: 42px;
+  width: 2px;
+  height: 12px;
+  background: #e2e8f0;
+}
+.note-glyph.active {
+  background: #7c5cff;
+  box-shadow: 0 0 14px rgba(124, 92, 255, 0.9);
+}
+.note-glyph.active::after { background: #c4b5fd; }
+.rest-glyph {
+  position: absolute;
+  color: #94a3b8;
+  font-size: 26px;
+  line-height: 1;
+}
+.note-label {
+  position: absolute;
+  font-size: 9px;
+  font-family: ui-monospace, monospace;
+  color: #64748b;
+  transform: translateX(-3px);
+}
+.accidental {
+  position: absolute;
+  font-size: 15px;
+  color: #cbd5e1;
+}
+.clef {
+  position: absolute;
+  left: 2px;
+  top: 26px;
+  font-size: 58px;
+  color: #94a3b8;
+  font-family: serif;
+}
+.score-card {
+  @apply card p-0;
+}
+.score-item {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: .9rem;
+  padding: 12px;
+  transition: border-color .2s, background .2s;
+}
+.score-item:hover { border-color: rgba(124,92,255,.5); background: rgba(124,92,255,.06); }
+.score-item.selected { border-color: #2dd4bf; box-shadow: 0 0 0 1px rgba(45,212,191,.4); }
+
+::-webkit-scrollbar { height: 8px; width: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(124,92,255,.4); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }

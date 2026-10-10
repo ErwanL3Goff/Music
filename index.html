@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fréquence Studio — Clavier musical, enregistreur & partitions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { display: ['Poppins', 'system-ui', 'sans-serif'] },
+          colors: {
+            night: '#0b1020',
+            panel: '#141a33',
+            accent: '#7c5cff',
+            aqua: '#2dd4bf',
+            rose: '#fb7185'
+          },
+          boxShadow: {
+            glow: '0 0 22px rgba(124,92,255,.55)',
+            keylight: '0 6px 0 rgba(0,0,0,.35)'
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-night text-slate-100 font-display min-h-screen">
+
+  <!-- ================= HEADER ================= -->
+  <header class="sticky top-0 z-30 backdrop-blur bg-night/80 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4 flex-wrap">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-aqua flex items-center justify-center shadow-glow">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold leading-none">Fréquence&nbsp;Studio</h1>
+          <p class="text-xs text-slate-400">Web Audio API · Fréquences · Partitions</p>
+        </div>
+      </div>
+
+      <nav class="ml-auto flex gap-2 flex-wrap" id="tabs">
+        <button data-tab="play"   class="tab-btn active">🎹 Jouer</button>
+        <button data-tab="record" class="tab-btn">🔴 Enregistrer</button>
+        <button data-tab="scores" class="tab-btn">🎼 Partitions</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- ================= PANEL : JOUER ================= -->
+    <section id="panel-play" class="tab-panel">
+      <div class="grid lg:grid-cols-3 gap-5">
+
+        <!-- Synth controls -->
+        <div class="lg:col-span-2 space-y-5">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Synthétiseur</h2>
+              <span class="badge" id="freq-readout">— Hz</span>
+            </div>
+
+            <div class="grid sm:grid-cols-4 gap-4 p-4">
+              <label class="ctrl">
+                <span class="ctrl-label">Forme d'onde</span>
+                <select id="waveform" class="ctrl-input">
+                  <option value="sine">Sinus — doux</option>
+                  <option value="triangle">Triangle — clair</option>
+                  <option value="square">Carré — rétro</option>
+                  <option value="sawtooth">Dent de scie — riche</option>
+                </select>
+              </label>
+              <label class="ctrl">
+                <span class="ctrl-label">Volume <b id="vol-val">35%</b></span>
+                <input id="volume" type="range" min="0" max="100" value="35" class="ctrl-range" />
+              </label>
+              <label class="ctrl">
+                <span class="ctrl-label">Attaque <b id="att-val">0.02 s</b></span>
+                <input id="attack" type="range" min="1" max="80" value="2" class="ctrl-range" />
+              </label>
+              <label class="ctrl">
+                <span class="ctrl-label">Relâchement <b id="rel-val">0.35 s</b></span>
+                <input id="release" type="range" min="2" max="200" value="35" class="ctrl-range" />
+              </label>
+            </div>
+
+            <div class="px-4 pb-4 flex items-center gap-3 flex-wrap">
+              <label class="ctrl grow min-w-[180px]">
+                <span class="ctrl-label">Octave : <b id="oct-val">4</b> (touches A–L = do–la, W–P = dièses)</span>
+                <input id="octave" type="range" min="2" max="6" value="4" class="ctrl-range" />
+              </label>
+              <button id="btn-demo" class="btn btn-ghost">▶ Jouer la gamme de Do</button>
+            </div>
+          </div>
+
+          <!-- Keyboard -->
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Clavier</h2>
+              <p class="text-xs text-slate-400">Jouez avec les touches de votre clavier ou cliquez sur les touches</p>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <div id="keyboard" class="keyboard relative select-none"></div>
+            </div>
+            <div class="px-4 pb-4 text-xs text-slate-400">
+              Disposition&nbsp;: <kbd>A</kbd><kbd>Z</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>U</kbd> (blanches) ·
+              <kbd>S</kbd><kbd>D</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd> (dièses) ·
+              <kbd>O</kbd><kbd>P</kbd> (si / do supérieur)
+            </div>
+          </div>
+
+          <!-- Visualizer -->
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Visualiseur de fréquence</h2>
+              <span class="badge">Oscilloscope + Spectre</span>
+            </div>
+            <canvas id="scope" class="w-full h-40 block"></canvas>
+          </div>
+        </div>
+
+        <!-- Side info -->
+        <aside class="space-y-5">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Notes actives</h2></div>
+            <div id="live-notes" class="p-4 flex flex-wrap gap-2 min-h-[64px]">
+              <span class="text-xs text-slate-500 italic self-center">Aucune note…</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Correspondance fréquences</h2></div>
+            <div class="p-4">
+              <table class="freq-table w-full text-sm">
+                <thead><tr><th>Note</th><th>Fréquence</th><th>Touche</th></tr></thead>
+                <tbody id="freq-table-body"></tbody>
+              </table>
+              <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+                Formule utilisée&nbsp;: <code class="code">f = 440 × 2<sup>(n−69)/12</sup></code> (tempérament égal, La4 = 440 Hz),
+                générée par l'<code class="code">OscillatorNode</code> de la Web Audio API.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= PANEL : ENREGISTRER ================= -->
+    <section id="panel-record" class="tab-panel hidden">
+      <div class="grid lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 space-y-5">
+
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Enregistreur de notes</h2>
+              <div class="flex items-center gap-3">
+                <span id="rec-status" class="badge badge-idle">PRÊT</span>
+                <span id="rec-time" class="font-mono text-sm text-slate-300">00:00.0</span>
+              </div>
+            </div>
+
+            <div class="p-4 flex flex-wrap gap-3">
+              <button id="btn-rec" class="btn btn-rec">⏺ Enregistrer</button>
+              <button id="btn-stop" class="btn btn-danger" disabled>⏹ Stop</button>
+              <button id="btn-playtake" class="btn btn-primary" disabled>▶ Réécouter</button>
+              <button id="btn-clear-take" class="btn btn-ghost" disabled>🗑 Vider</button>
+              <button id="btn-save-score" class="btn btn-success" disabled>💾 Enregistrer la prise → Partition</button>
+            </div>
+
+            <div class="px-4 pb-2 text-xs text-slate-400">
+              Chaque appui de touche est horodaté (note, fréquence, durée). Relisez la prise ou convertissez-la en partition.
+            </div>
+
+            <div class="p-4 pt-2">
+              <div class="mini-keyboard-hint card-inner">
+                <p class="text-xs text-slate-400 mb-2">Le synthé reste jouable pendant l'enregistrement :</p>
+                <div id="keyboard-rec" class="keyboard relative select-none scale-90 origin-left"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Piano roll of current take -->
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Rouleau de piano — prise en cours</h2>
+              <span class="badge" id="take-count">0 note(s)</span>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <canvas id="roll-canvas" width="900" height="220" class="rounded-lg bg-black/30"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <aside class="space-y-5">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Journal de la prise</h2></div>
+            <ul id="take-log" class="p-4 space-y-1 max-h-72 overflow-y-auto text-sm log-list"></ul>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Conseils</h2></div>
+            <ul class="p-4 text-sm text-slate-300 space-y-2 list-disc pl-5">
+              <li>Lancez l'enregistrement, jouez une mélodie, puis <b>Stop</b>.</li>
+              <li><b>Réécouter</b> rejoue la prise avec le son actuel du synthé.</li>
+              <li><b>Enregistrer la prise</b> crée une partition sauvegardée dans le navigateur.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= PANEL : PARTITIONS ================= -->
+    <section id="panel-scores" class="tab-panel hidden">
+      <div class="grid lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 space-y-5">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Nouvelle partition</h2>
+              <span class="badge">Création manuelle</span>
+            </div>
+            <div class="p-4 grid sm:grid-cols-4 gap-3">
+              <label class="ctrl">
+                <span class="ctrl-label">Nom de la partition</span>
+                <input id="score-name" class="ctrl-input" placeholder="Ma mélodie" />
+              </label>
+              <label class="ctrl">
+                <span class="ctrl-label">Note</span>
+                <select id="composer-note" class="ctrl-input"></select>
+              </label>
+              <label class="ctrl">
+                <span class="ctrl-label">Durée (temps)</span>
+                <select id="composer-dur" class="ctrl-input">
+                  <option value="0.25">Croche (½)</option>
+                  <option value="0.5" selected>Noire</option>
+                  <option value="1">Blanche</option>
+                  <option value="2">Ronde</option>
+                </select>
+              </label>
+              <div class="flex items-end gap-2">
+                <button id="btn-add-note" class="btn btn-primary">＋ Ajouter</button>
+                <button id="btn-add-rest" class="btn btn-ghost">𝄽 Silence</button>
+              </div>
+            </div>
+            <div class="px-4 pb-4">
+              <div id="composer-preview" class="staff-wrap card-inner"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Mes partitions</h2>
+              <div class="flex gap-2">
+                <button id="btn-new-score" class="btn btn-ghost text-xs">Nouvelle</button>
+              </div>
+            </div>
+            <div id="scores-list" class="p-4 space-y-3"></div>
+          </div>
+        </div>
+
+        <aside class="space-y-5">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Lecteur de partition</h2></div>
+            <div class="p-4 space-y-3">
+              <label class="ctrl">
+                <span class="ctrl-label">Tempo <b id="bpm-val">100 BPM</b></span>
+                <input id="bpm" type="range" min="40" max="220" value="100" class="ctrl-range" />
+              </label>
+              <div class="flex gap-2 flex-wrap">
+                <button id="btn-play-score" class="btn btn-primary">▶ Lecture</button>
+                <button id="btn-stop-score" class="btn btn-danger" disabled>⏹ Stop</button>
+                <button id="btn-export-score" class="btn btn-ghost">⬇ Export JSON</button>
+              </div>
+              <div id="score-progress" class="h-2 rounded bg-white/10 overflow-hidden">
+                <div id="score-progress-bar" class="h-full w-0 bg-gradient-to-r from-accent to-aqua transition-all duration-75"></div>
+              </div>
+              <p id="score-now-playing" class="text-xs text-slate-400 font-mono">Aucune lecture</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Aide</h2></div>
+            <ul class="p-4 text-sm text-slate-300 space-y-2 list-disc pl-5">
+              <li>Les partitions sont sauvegardées dans le <b>localStorage</b>.</li>
+              <li>Une portée affiche les hauteurs (ligne médiane = Do4) et la largeur des notes code la durée.</li>
+              <li>Export JSON pour partager vos compositions.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 py-6">
+    Fréquence Studio — HTML · Tailwind CSS · JavaScript · Web Audio API
+  </footer>
+
+  <script src="js/audio.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/recorder.js"></script>
+  <script src="js/score.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

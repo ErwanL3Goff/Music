@@ -50,6 +50,7 @@
         <button data-tab="play"   class="tab-btn active">🎹 Jouer</button>
         <button data-tab="record" class="tab-btn">🔴 Enregistrer</button>
         <button data-tab="scores" class="tab-btn">🎼 Partitions</button>
+        <button data-tab="gamepad" class="tab-btn">🎮 Manette Xbox</button>
       </nav>
     </div>
   </header>
@@ -94,8 +95,8 @@
 
             <div class="px-4 pb-4 flex items-center gap-3 flex-wrap">
               <label class="ctrl grow min-w-[180px]">
-                <span class="ctrl-label">Octave de base : <b id="oct-val">4</b> (2 octaves jouables, ± avec les touches - / +)</span>
-                <input id="octave" type="range" min="2" max="5" value="4" class="ctrl-range" />
+                <span class="ctrl-label">Octave de base : <b id="oct-val">4</b> (fenêtre clavier de 2 octaves, ± avec - / + · piano complet : 88 touches La0→Do8)</span>
+                <input id="octave" type="range" min="1" max="6" value="4" class="ctrl-range" />
               </label>
               <button id="btn-demo" class="btn btn-ghost">▶ Jouer la gamme de Do</button>
             </div>
@@ -110,11 +111,25 @@
             <div class="p-4 overflow-x-auto">
               <div id="keyboard" class="keyboard relative select-none"></div>
             </div>
-            <div class="px-4 pb-4 text-xs text-slate-400 leading-6">
+            <div class="px-4 pb-2 text-xs text-slate-400 leading-6">
               Disposition&nbsp;: <kbd>A</kbd><kbd>Z</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>Y</kbd><kbd>U</kbd><kbd>I</kbd><kbd>O</kbd><kbd>P</kbd> (blanches, 2 octaves) ·
               <kbd>S</kbd><kbd>D</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd><kbd>L</kbd><kbd>M</kbd> (dièses) ·
               Alias QWERTY <kbd>W</kbd><kbd>X</kbd><kbd>C</kbd><kbd>V</kbd><kbd>B</kbd><kbd>N</kbd> ·
               <kbd>-</kbd><kbd>+</kbd> changer d'octave
+            </div>
+          </div>
+
+          <!-- Full 88-key concert piano -->
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Piano complet — 88 touches</h2>
+              <span class="badge">La0 (27,5 Hz) → Do8 (4186 Hz)</span>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <div id="keyboard-full" class="keyboard keyboard-88 relative select-none"></div>
+            </div>
+            <div class="px-4 pb-4 text-xs text-slate-400">
+              Toutes les touches sont jouables à la souris ou via la manette Xbox 🎮 — les raccouris clavier (A–P, S–M) agissent sur la fenêtre d'octave courante, surlignés en temps réel sur ce piano.
             </div>
           </div>
 
@@ -140,7 +155,7 @@
           <div class="card">
             <div class="card-head">
               <h2 class="card-title">Raccourcis clavier</h2>
-              <span class="badge">2 octaves · 17 touches</span>
+              <span class="badge">Fenêtre clavier · 17 touches</span>
             </div>
             <div id="kbd-help" class="p-4 space-y-2 leading-6"></div>
           </div>
@@ -303,6 +318,87 @@
         </aside>
       </div>
     </section>
+
+    <!-- ================= PANEL : MANETTE XBOX 360 / XINPUT ================= -->
+    <section id="panel-gamepad" class="tab-panel hidden">
+      <div class="grid lg:grid-cols-2 gap-5">
+        <div class="space-y-5">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title"><span id="gp-dot" class="inline-block w-2.5 h-2.5 rounded-full mr-2 bg-slate-500"></span>État de la manette</h2>
+              <span class="badge" id="gp-conn-badge">Déconnectée</span>
+            </div>
+            <div class="p-4 space-y-3">
+              <p id="gp-status" class="text-sm text-slate-300 font-mono leading-6">Aucune manette détectée — branchez une manette Xbox 360 / XInput.</p>
+              <p class="text-xs text-slate-400 leading-5">
+                L'application utilise l'API standard <code class="code">Gamepad</code> du navigateur&nbsp;: sous Windows,
+                les manettes <b>Xbox 360</b> et compatibles <b>XInput</b> sont exposées automatiquement avec le mapping
+                «&nbsp;standard&nbsp;». La connexion est <b>détectée à chaud</b> — aucune installation ni pilote requis.
+              </p>
+              <div class="flex gap-2 flex-wrap">
+                <button id="btn-gp-test" class="btn btn-primary">🎮 Balayer les 88 touches</button>
+                <button id="btn-gp-reset" class="btn btn-ghost">↺ Réinitialiser la configuration</button>
+              </div>
+              <p class="text-xs text-aqua" id="gp-info">En attente d'activité…</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Configuration des touches (mapping Xbox 360)</h2>
+              <span class="badge">XInput · standard</span>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <table class="freq-table w-full text-sm">
+                <thead><tr><th>Action musicale</th><th>Touche manette</th></tr></thead>
+                <tbody id="gp-map"></tbody>
+              </table>
+              <ul class="text-xs text-slate-400 mt-3 space-y-1 list-disc list-inside leading-5">
+                <li><kbd>A</kbd>/<kbd>Y</kbd> ou stick gauche ↕&nbsp;: descendre/monter la fenêtre d'octave (1→6).</li>
+                <li>Stick droit ↔&nbsp;: mélodie diatonique continue sur toute la fenêtre jouable.</li>
+                <li>Croix directionnelle&nbsp;: accords plaqués (↑ majeur · → septième de dominante · ↓ mineur · ← mineur 7ᵉ).</li>
+                <li><kbd>LB</kbd> ou <kbd>RT</kbd> maintenu&nbsp;: mode ♯ — tout devient dièse.</li>
+                <li><kbd>B</kbd>/<kbd>X</kbd> maintenus&nbsp;: glissando demi-tonal montant/descendant.</li>
+                <li><kbd>RB</kbd>/<kbd>LT</kbd>&nbsp;: quinte / quarte au-dessus de la note courante.</li>
+                <li><kbd>Start</kbd>&nbsp;: balayage des 88 touches · <kbd>Back</kbd>&nbsp;: couper toutes les voix.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Journal de connexion</h2></div>
+            <ul id="gp-log" class="p-4 text-xs font-mono text-slate-300 space-y-1 max-h-40 overflow-y-auto"></ul>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Schéma du contrôleur</h2></div>
+            <div class="p-4">
+              <svg viewBox="0 0 320 200" class="w-full max-w-md mx-auto" aria-label="Manette Xbox 360">
+                <path d="M40 90 Q30 40 80 35 Q130 30 160 55 Q190 30 240 35 Q290 40 280 90 Q275 135 240 150 Q200 165 160 140 Q120 165 80 150 Q45 135 40 90 Z" fill="#1e2440" stroke="#475081" stroke-width="2"/>
+                <circle cx="85" cy="80" r="26" fill="none" stroke="#3a4368" stroke-width="2"/>
+                <circle cx="85" cy="80" r="10" fill="#2dd4bf" opacity=".85"/>
+                <text x="85" y="120" fill="#94a3b8" font-size="10" text-anchor="middle">Stick G : octave</text>
+                <g>
+                  <rect x="212" y="52" width="12" height="12" rx="2" fill="#f472b6"/><text x="218" y="48" fill="#cbd5e1" font-size="9" text-anchor="middle">Y</text>
+                  <rect x="212" y="96" width="12" height="12" rx="2" fill="#f472b6"/><text x="218" y="112" fill="#cbd5e1" font-size="9" text-anchor="middle">A</text>
+                  <rect x="192" y="74" width="12" height="12" rx="2" fill="#f472b6"/><text x="188" y="82" fill="#cbd5e1" font-size="9" text-anchor="end">X</text>
+                  <rect x="232" y="74" width="12" height="12" rx="2" fill="#f472b6"/><text x="248" y="82" fill="#cbd5e1" font-size="9">B</text>
+                  <text x="218" y="132" fill="#94a3b8" font-size="10" text-anchor="middle">Accords / glissando</text>
+                </g>
+                <g fill="#a5b4fc">
+                  <rect x="132" y="70" width="8" height="8" rx="1"/><rect x="132" y="94" width="8" height="8" rx="1"/>
+                  <rect x="120" y="82" width="8" height="8" rx="1"/><rect x="144" y="82" width="8" height="8" rx="1"/>
+                </g>
+                <text x="136" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">Croix : accords</text>
+                <circle cx="160" cy="62" r="7" fill="#2dd4bf" opacity=".9"/><text x="160" y="45" fill="#94a3b8" font-size="9" text-anchor="middle">Start : 88 touches</text>
+                <text x="160" y="175" fill="#64748b" font-size="9" text-anchor="middle">LB/RT = ♯ · Stick D = mélodie · RB/LT = quinte/quarte</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="text-center text-xs text-slate-500 py-6">
@@ -311,6 +407,7 @@
 
   <script src="js/audio.js"></script>
   <script src="js/keyboard.js"></script>
+  <script src="js/gamepad.js"></script>
   <script src="js/recorder.js"></script>
   <script src="js/score.js"></script>
   <script src="js/app.js"></script>

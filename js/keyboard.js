@@ -33,6 +33,18 @@ const KEY_MAP = {
     { rel: 15, key: 'm', afterWhite: 8 },  // Ré#+1
   ],
 };
+// Demi-demi-tons correspondant aux touches noires d'une octave (à l'intérieur de KEY_MAP)
+const BLACK_SET = new Set([1, 3, 6, 8, 10]);
+
+// Indications de raccouris affichées sur le piano 88 touches (construites depuis KEY_MAP)
+const KEY_HINTS = (() => {
+  const h = new Map();
+  const base = (4 + 1) * 12; // fenêtre par défaut : octave 4
+  KEY_MAP.white.forEach(w => h.set(base + w.rel, w.key.toUpperCase()));
+  KEY_MAP.black.forEach(b => h.set(base + b.rel, b.key.toUpperCase()));
+  return h;
+})();
+
 
 class PianoUI {
   /**
@@ -53,6 +65,7 @@ class PianoUI {
   }
 
   build() {
+    if (this.container && this.container.id === 'keyboard-full') return this.buildFull();
     this.container.innerHTML = '';
     this.keysEl.clear();
 
@@ -88,6 +101,47 @@ class PianoUI {
       this.container.appendChild(el);
       this.keysEl.set(midi, el);
     });
+  }
+
+  /** Piano complet type piano de concert : 88 touches MIDI 21 (La0) → 108 (Do8),
+   *  comme sur un clavier maître — toutes les touches sont jouables à la souris. */
+  buildFull() {
+    this.container.innerHTML = '';
+    this.keysEl.clear();
+    const LOW = 21, HIGH = 108;               // La0 -> Do8 : standard 88 touches
+    const whiteMidis = [];
+    for (let m = LOW; m <= HIGH; m++) if (!BLACK_SET.has(m % 12)) whiteMidis.push(m);
+    const W = 100 / whiteMidis.length;
+    whiteMidis.forEach((midi, i) => {
+      const el = document.createElement('div');
+      el.className = 'key key-white';
+      el.style.left = `${i * W}%`;
+      el.style.width = `calc(${W}% - 1px)`;
+      el.style.height = '100%';
+      el.dataset.midi = midi;
+      const hint = KEY_HINTS.get(midi);
+      el.innerHTML = `<span class="key-name">${midiToName(midi)}</span>` +
+        (hint ? `<span class="key-hint">${hint}</span>` : '');
+      this.bindPointer(el, midi);
+      this.container.appendChild(el);
+      this.keysEl.set(midi, el);
+    });
+    for (let midi = LOW; midi <= HIGH; midi++) {
+      if (!BLACK_SET.has(midi % 12)) continue;
+      const after = whiteMidis.indexOf(midi - 1); // touche blanche précédente
+      const el = document.createElement('div');
+      el.className = 'key key-black';
+      el.style.left = `calc(${(after + 1) * W}% - ${W * 0.3}%)`;
+      el.style.width = `${W * 0.6}%`;
+      el.style.height = '62%';
+      el.dataset.midi = midi;
+      const hint = KEY_HINTS.get(midi);
+      el.innerHTML = `<span class="key-name" style="color:#cbd5e1;top:auto;bottom:6px;font-size:8px;">${midiToName(midi)}</span>` +
+        (hint ? `<span class="key-hint" style="color:#94a3b8">${hint}</span>` : '');
+      this.bindPointer(el, midi);
+      this.container.appendChild(el);
+      this.keysEl.set(midi, el);
+    }
   }
 
   setOctave(oct) {

@@ -73,6 +73,12 @@ kbd {
 
 /* ===== Piano ===== */
 .keyboard { height: 190px; min-width: 640px; }
+/* Piano complet 88 touches : large fenêtre défilante */
+.keyboard-88 { height: 150px; min-width: 1500px; }
+.keyboard-88 .key-white { border-radius: 0 0 4px 4px; }
+.keyboard-88 .key-name { font-size: 7px; bottom: 4px; }
+.keyboard-88 .key-hint { font-size: 8px; top: 4px; }
+.keyboard-88 .key-black .key-name { font-size: 6.5px; bottom: 4px; }
 .key {
   position: absolute;
   top: 0;

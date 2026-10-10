@@ -13,6 +13,7 @@ const scorePlayer = new ScorePlayer();
 
 let pianoMain = null;   // piano de l'onglet Jouer
 let pianoRec = null;    // piano de l'onglet Enregistrer
+let pianoFull = null;   // piano 88 touches (A0->C8)
 let composerNotes = []; // notes de la partition en cours d'édition
 let selectedScoreId = null;
 
@@ -58,7 +59,7 @@ const UI = {
   },
 
   flashKey(midi) {
-    [pianoMain, pianoRec].forEach(p => {
+    [pianoMain, pianoRec, pianoFull].forEach(p => {
       if (!p) return;
       p.highlightExternal(midi, true);
       setTimeout(() => p.highlightExternal(midi, false), 250);
@@ -121,7 +122,7 @@ function initSynthControls() {
   $('#octave').addEventListener('input', e => setOctave(+e.target.value));
 
   document.addEventListener('octave-change', (e) => {
-    const v = Math.min(5, Math.max(2, +$('#octave').value + e.detail));
+    const v = Math.min(6, Math.max(1, +$('#octave').value + e.detail));
     $('#octave').value = v;
     setOctave(v);
   });
@@ -133,7 +134,8 @@ function setOctave(oct) {
   $('#oct-val').textContent = oct;
   [pianoMain, pianoRec].forEach(p => p && p.setOctave(oct));
   buildFreqTable(oct);
-  if (typeof window.buildKeyboardHelp === 'function') window.buildKeyboardHelp();
+  buildKeyboardHelp();
+  if (window.gamepadPanel) window.gamepadPanel.setInfo(`Fenêtre manette : octave ${oct}`);
 }
 
 function playScaleDemo() {
@@ -445,6 +447,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   pianoMain = new PianoUI($('#keyboard'), sharedOpts);
   pianoRec = new PianoUI($('#keyboard-rec'), {});
+  // Piano complet 88 touches (La0 -> Do8) sous le clavier principal
+  // Le piano 88 touches est une fenêtre fixe La0->Do8 ; ses callbacks sont
+  // mutualisés avec le clavier principal via PhysicalKeyboard/GamepadSynth.
+  pianoFull = new PianoUI($('#keyboard-full'), { octave: 4 });
   // Le piano "rec" doit aussi déclencher l'enregistreur via les touches physiques :
   // PhysicalKeyboard appelle triggerOn sur tous les pianos ; on branche le callback du second :
   pianoRec.opts = sharedOpts;
@@ -464,6 +470,27 @@ window.addEventListener('DOMContentLoaded', () => {
   initRecorder();
   initComposer();
   renderScoresList();
+
+  // ---------- Manette Xbox 360 / XInput ----------
+  const gamepad = new GamepadSynth([pianoMain, pianoRec, pianoFull], {
+    octaveMin: 1, octaveMax: 6,
+    onStatus: (connected, name) => {
+      const dot = $('#gp-dot');
+      if (dot) dot.className = 'inline-block w-2.5 h-2.5 rounded-full mr-2 ' + (connected ? 'bg-emerald-400' : 'bg-slate-500');
+      const badge = $('#gp-conn-badge');
+      if (badge) badge.textContent = connected ? `Connectée : ${name}` : 'Déconnectée';
+      if (connected) gamepadLog(`Manette détectée et connectée — ${name}`);
+      else gamepadLog('Manette déconnectée.');
+    },
+    onInfo: (txt) => { if (window.gamepadPanel) window.gamepadPanel.setInfo(txt); },
+  });
+  window.gamepadPanel = new GamepadConfigPanel(gamepad);
+  window.gamepadLog = (msg) => window.gamepadPanel._log(msg);
+  $('#btn-gp-reset')?.addEventListener('click', () => window.gamepadPanel.resetDefaults());
+  $('#btn-gp-test')?.addEventListener('click', () => {
+    if (!gamepad.connected) return alert('Aucune manette détectée. Branchez une manette Xbox 360 / XInput puis appuyez sur un bouton.');
+    gamepad.sweepDemo();
+  });
 
   // Débloque l'AudioContext au premier clic n'importe où
   window.addEventListener('pointerdown', () => engine.ensureContext(), { once: true });

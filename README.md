@@ -63,3 +63,24 @@ js/app.js         — câblage UI, onglets, visualiseur
 ```
 f(n) = 440 × 2^((n − 69) / 12)   où n = numéro MIDI (La4 = 69 = 440 Hz)
 ```
+
+## 🎹 Piano complet & manette Xbox 360 / XInput
+
+- **Piano de concert 88 touches** (La0 → Do8, MIDI 21–108) affiché dans l'onglet *Jouer* — chaque touche est jouable à la souris.
+- Le clavier physique reste une **fenêtre mobile de 2 octaves** (curseur d'octave 1→6, touches `A Z E R T Y U I O P` + dièses `S D G H J L M`).
+- **Onglet 🎮 Manette Xbox** : support natif de l'API Gamepad (mapping « standard » = XInput / Xbox 360 sous Windows). Détection à chaud, journal de connexion, schéma du contrôleur et tableau de configuration des touches.
+
+### Mapping manette (Xbox 360 / XInput)
+| Touche | Action |
+|---|---|
+| Stick gauche ↕ / Croix ↑↓ | Fenêtre d'octave ± (1→6) |
+| Stick droit ↔ | Mélodie diatonique continue sur la fenêtre |
+| Croix ↑ / → / ↓ / ← | Accords majeur · 7ᵉ dominante · mineur · mineur 7ᵉ |
+| LB ou RT (maintenu) | Mode ♯ (tout en dièses) |
+| B / X (maintenus) | Glissando demi-tonal montant / descendant |
+| RB / LT | Quinte / quarte au-dessus de la note courante |
+| A / Y | Octave − / + |
+| Start | Balayage des 88 touches |
+| Back | Coupe toutes les voix |
+
+> 💡 Sous Windows, les manettes Xbox 360 et compatibles XInput sont exposées automatiquement par le navigateur (aucun pilote supplémentaire). Sur Mac/Linux, un adaptateur ou une manette en mapping « standard » fonctionne également.
